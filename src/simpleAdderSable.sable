@@ -1,0 +1,83 @@
+Helpers
+	tudo = [0..0xffff];
+	
+	/*Espacos*/
+	tab = 9;
+	lf = 10;
+	cr = 13;
+	
+	/*Letras e Numeros*/
+	underscore = '_';
+	aspa = 39;
+	digito = ['0'..'9'];
+	letrasmin = ['a'..'z'];
+	letrasmax = ['A'..'Z'];
+	letras = (letrasmin | letrasmax);
+	tudo_menos_branco = [tudo-[cr+lf]];
+	tudo_menos_asterisco = [tudo - '*'];
+
+Tokens
+
+	/*Palavras Reservadas*/
+	caractere = 'caractere';
+	inicio = 'inicio';
+	fim = 'fim';
+	senao = 'senao';
+	se = 'se';
+	enquanto = 'enquanto';
+	para = 'para';
+	avalie = 'avalie';
+	caso = 'caso';
+	booleano = 'booleano';
+	verdadeiro = 'verdadeiro';
+	falso = 'falso';
+	real = 'real';
+	inteiro = 'inteiro';
+	
+	/*Operadores aritméticos*/ 
+	
+	soma = '+';
+	subtracao = '-';
+	multiplicador = '*';
+	divisor = '/';
+	
+	/*Operadores relacionais*/
+	
+	maior = '>';
+	menor = '<';
+	maiorigual = '>=';
+	menorigual = '<=';
+	igual = '=';
+	diferente = '<>';
+	
+	/*Operadores booleanos*/
+	operador_negacao = 'nao';
+	operador_e = 'e';
+	operador_ou = 'ou';
+	
+	/*Pontuacao e Limitadores*/
+	
+	abre_parentese = '(';
+	fecha_parentese = ')';
+	abre_colchete = '[';
+	fecha_colchete = ']';
+	atribuicao = ':=';
+	pontovirgula = ';';
+	doispontos = ':';
+	espaco = ' ';
+	quebra = (tab | lf | cr);
+
+	/*Identificadores*/
+	identificador = (underscore | letras)(letras | digito | underscore)*;
+	id_inteiro = (digito)+;
+	id_real = (digito)+ ',' (digito)*;
+	id_caractere = '''tudo_menos_branco''';
+	id_string = '''tudo_menos_branco+''';
+
+	/*Comentarios*/
+	comentario = '//'+tudo_menos_branco*;
+	comentario_bloco = '/*' tudo_menos_asterisco* '*'+ ([tudo_menos_asterisco - '/'] tudo_menos_asterisco* '*'+)* '/';
+
+Ignored Tokens
+	espaco,comentario_bloco,comentario;
+	
