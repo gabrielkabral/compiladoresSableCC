@@ -16,6 +16,11 @@ Helpers
 	tudo_menos_branco = [tudo-[cr+lf]];
 	tudo_menos_asterisco = [tudo - '*'];
 
+	
+States 
+    normal,
+    comentario;
+	
 Tokens
 
 	/*Palavras Reservadas*/
@@ -75,9 +80,12 @@ Tokens
 	id_string = '''tudo_menos_branco+''';
 
 	/*Comentarios*/
-	comentario = '//'+tudo_menos_branco*;
-	comentario_bloco = '/*' tudo_menos_asterisco* '*'+ ([tudo_menos_asterisco - '/'] tudo_menos_asterisco* '*'+)* '/';
+	{normal->comentario,comentario} comentario_bloco = '/*';
+    {comentario} comentario_corpo = [tudo - ['*' + '/']]*; 
+    {normal->comentario,comentario} comentario_fim_bloco = '*/';               
+    {comentario} estrela = '*';
+    {comentario} barra = '/';
+    {normal} comentario_linha = '//'tudo_menos_branco*;
 
 Ignored Tokens
-	espaco,comentario_bloco,comentario;
-	
+	espaco;

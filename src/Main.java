@@ -1,9 +1,9 @@
 /* Create an AST, then invoke our interpreter. */ 
-import lexer.Lexer ; 
-import helper.Helper;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PushbackReader;
+
+import helper.Helper;
 
 public class Main 
 {
@@ -12,7 +12,7 @@ public class Main
 	{
 		if (args.length > 0)
 		{
-			Lexer lexer = new Lexer(new PushbackReader(new FileReader(args[0]), 1024));
+			ComentarioAninhado lexer = new ComentarioAninhado(new PushbackReader(new FileReader(args[0]), 1024));
 			Helper.buscarTokens(lexer);
 		} else {
 			System.out.println("Nenhum arquivo para leitura.");
