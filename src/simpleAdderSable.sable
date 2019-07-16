@@ -5,10 +5,10 @@ Helpers
 	tab = 9;
 	lf = 10;
 	cr = 13;
-	
+	sp = ' ' ;
 	/*Letras e Numeros*/
 	underscore = '_';
-	aspa = 39;
+	aspa = ''';
 	digito = ['0'..'9'];
 	letrasmin = ['a'..'z'];
 	letrasmax = ['A'..'Z'];
@@ -24,6 +24,7 @@ States
 Tokens
 
 	/*Palavras Reservadas*/
+	programa = 'programa';
 	caractere = 'caractere';
 	inicio = 'inicio';
 	fim = 'fim';
@@ -38,8 +39,21 @@ Tokens
 	falso = 'falso';
 	real = 'real';
 	inteiro = 'inteiro';
+	constante = 'constante';
+	leia = 'leia';
+	escreva = 'escreva';
+	entao = 'entao';
+	fim_se = 'fim se';
+	fim_avalie = 'fim avalie';
+	faca = 'faca';
+	fim_enquanto = 'fim enquanto';
+	repita = 'repita';
+	ate = 'ate';
+	de = 'de';
+	passo = 'passo';
+	fim_para = 'fim para';
 	
-	/*Operadores aritmÃ©ticos*/ 
+	/*Operadores aritméticos*/ 
 	
 	soma = '+';
 	subtracao = '-';
@@ -59,6 +73,7 @@ Tokens
 	operador_negacao = 'nao';
 	operador_e = 'e';
 	operador_ou = 'ou';
+	operador_xor = 'xor';
 	
 	/*Pontuacao e Limitadores*/
 	
@@ -70,14 +85,16 @@ Tokens
 	pontovirgula = ';';
 	doispontos = ':';
 	espaco = ' ';
+	virg = ',';
 	quebra = (tab | lf | cr);
 
 	/*Identificadores*/
-	identificador = (underscore | letras)(letras | digito | underscore)*;
+	identificador = (underscore | letras) (letras | digito | underscore)*;
 	id_inteiro = (digito)+;
 	id_real = (digito)+ ',' (digito)*;
 	id_caractere = '''tudo_menos_branco''';
 	id_string = '''tudo_menos_branco+''';
+	blank = (sp | tab | (lf | lf cr | cr))+;
 
 	/*Comentarios*/
 	{normal->comentario,comentario} comentario_bloco = '/*';
@@ -88,4 +105,83 @@ Tokens
     {normal} comentario_linha = '//'tudo_menos_branco*;
 
 Ignored Tokens
-	espaco;
+	blank, espaco;
+
+Productions
+    start = {start} programa identificador inicio declaracao comando fim;
+    declaracoes = {declaracao_tipo} tipo doispontos var_virg_list? var pontovirgula
+                | {declaracao_const} constante identificador valor pontovirgula;
+                
+    declaracao_list = {declaracao_list} declaracoes+;            
+    declaracao = {declaracao_lista} declaracao_list?; 
+
+    tipo = {tipo_real} real | {tipo_int} inteiro | {tipo_char} caractere | {tipo_bool} booleano;
+    var = {var_id} identificador | {var_index} identificador abre_colchete id_inteiro fecha_colchete;
+    valor = {val_str} id_string | {val_num} id_inteiro | {var_numreal} id_real;  
+    
+    //####################### COMANDO ###########################
+    comando = {comando} comando_list?;
+    comando_list = {comando_list} comandos+;
+
+    comandos = {comando_atrib} var atribuicao exp_ou_elogica pontovirgula
+              | {comando_leia} leia abre_parentese var_virg_list? var fecha_parentese pontovirgula 
+              | {comando_escreva} escreva abre_parentese exp_list? exp_ou_elogica fecha_parentese pontovirgula
+              | {comando_se} se abre_parentese exp_logica fecha_parentese entao comando_list? comandos
+                    senao_comando? fim_se pontovirgula
+              | {comando_avalie} avalie abre_parentese exp_ou_elogica fecha_parentese caso_comando? 
+                    senao_comando_doispontos? fim_avalie pontovirgula
+              | {comando_enquanto} enquanto abre_parentese exp_logica fecha_parentese faca 
+                    comando_list? comandos fim_enquanto pontovirgula
+              | {comando_repita} repita comando_list? comandos ate abre_parentese exp_logica 
+                    fecha_parentese pontovirgula
+              | {comando_para} para var de id_inteiro ate [a]:id_inteiro faca comando_list? comandos 
+                    fim_para pontovirgula
+              | {comando_passo} para var de id_inteiro passo [a]:id_inteiro ate [b]:id_inteiro faca comando_list? comandos 
+                    fim_para pontovirgula;
+                   
+    // AUXILIARES PARA COMANDOS                
+    var_virg = {var_virg} var virg;  
+    var_virg_list = {var_virg_list} var_virg+;   
+    exp_virg = {exp_virg} exp virg | {elogica_virg} exp_logica virg;
+    exp_list = {exp_list} exp_virg+;
+    
+    senao_comando = {comando_senao} senao comando_list? comandos; 
+    senao_comando_doispontos = {comando_senao2} senao doispontos comando_list? comandos;
+    caso_comandos = {comando_caso} caso valor doispontos comando_list? comandos; 
+    caso_comando = caso_comandos+;
+    comando_ponto_virg = {comando_ponto_virg} comandos pontovirgula;
+    comando_list_virg = {comando_virgula} comando_ponto_virg+;
+
+    //####################### EXP ###########################
+    exp = {exp_soma} exp soma termo
+            | {exp_subtracao} exp subtracao termo
+            | {exp_termo} termo;
+
+    termo = {termo_mult} termo multiplicador fator 
+            | {termo_div} termo divisor fator 
+            | {termo_fator} fator;
+
+    fator = {fator_val} valor 
+            | {fator_var} var
+            | {fator_negativo} subtracao fator
+            | {fator_parenteses} abre_parentese exp fecha_parentese;
+
+    //####################### EXP_LOGICA ###########################
+    exp_logica = {exp_logica_e} exp_logica operador_e exp_logica_termo
+            | {exp_logica_ou} exp_logica operador_ou exp_logica_termo
+            | {exp_logica_xor} exp_logica operador_xor exp_logica_termo
+            | {exp_logica_termo} exp_logica_termo; 
+
+    exp_logica_termo = {elogica_termo_parenteses} abre_parentese exp_logica fecha_parentese
+            | {nao_elogica_termo} operador_negacao exp_logica_termo
+            | {elogica_termo_fator} exp_logica_fator;
+
+    exp_logica_fator = {elogica_fator_menorigual} exp menorigual termo
+            | {elogica_fator_maiorigual} exp maiorigual termo
+            | {elogica_fator_menorq} exp menor termo
+            | {elogica_fator_maiorq} exp maior termo
+            | {elogica_fator_igual} exp igual termo
+            | {elogica_fator_diferente} exp diferente termo;
+         
+    exp_ou_elogica = {exp} exp | {elogica} exp_logica;
+    
